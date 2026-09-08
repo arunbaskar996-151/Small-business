@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Baskar Traders — Financial Management &amp; Profit Analysis</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=Inter:wght@400;500;600;700;800&display=swap');
+
+  :root{
+    --navy: #1C2B39;
+    --navy-deep: #131E28;
+    --paper: #F4F6F5;
+    --card: #FFFFFF;
+    --line: #DDE3E1;
+    --line-soft: #E9EDEC;
+    --green: #2E7D5B;
+    --green-bg: #E4F1EA;
+    --rust: #B0472F;
+    --rust-bg: #FAE7E2;
+    --gold: #C9A85C;
+    --gold-bg: #FBF4E2;
+    --ink: #1C2420;
+    --ink-soft: #5C6A65;
+    --ink-faint: #8B9793;
+    --radius: 10px;
+    --shadow: 0 1px 2px rgba(28,43,57,0.05), 0 3px 12px rgba(28,43,57,0.06);
+    font-size: 16px;
+  }
+  *{ box-sizing: border-box; }
+  html,body{ height:100%; }
+  body{
+    margin:0;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+    line-height:1.5;
+  }
+  h1,h2,h3,h4{ margin:0; font-weight:700; }
+  p{ margin:0; }
+  button{ font-family:inherit; cursor:pointer; }
+  a{ color: var(--green); }
+  .serif{ font-family: 'Source Serif 4', Georgia, serif; }
+  .num{ font-variant-numeric: tabular-nums; font-feature-settings:"tnum"; }
+  .hidden{ display:none !important; }
+
+  /* ===== Layout shell ===== */
+  .app-shell{
+    display:flex;
+    min-height:100vh;
+  }
+
+  /* ===== Sidebar nav ===== */
+  .sidebar{
+    width:230px;
+    flex-shrink:0;
+    background: var(--navy);
+    color:#fff;
+    display:flex;
+    flex-direction:column;
+    padding: 28px 0;
+    position:sticky;
+    top:0;
+    height:100vh;
+  }
+  .sidebar-brand{
+    padding: 0 24px 24px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    margin-bottom:20px;
+  }
+  .sidebar-brand .biz-name{
+    font-family:'Source Serif 4', serif;
+    font-size:1.2rem;
+    font-weight:600;
+    line-height:1.25;
+  }
+  .sidebar-brand .biz-type{
+    font-size:0.74rem;
+    color:#9FB0AA;
+    margin-top:4px;
+  }
+  .nav-list{
+    display:flex;
+    flex-direction:column;
+    gap:2px;
+    padding: 0 12px;
+  }
+  .nav-item{
+    display:flex;
+    align-items:center;
+    gap:11px;
+    padding: 11px 14px;
+    border-radius:8px;
+    border:none;
+    background:transparent;
+    color:#C7D2CD;
+    font-size:0.9rem;
+    font-weight:500;
+    text-align:left;
+    width:100%;
+    transition: background 0.12s ease, color 0.12s ease;
+  }
+  .nav-item:hover{ background: rgba(255,255,255,0.06); color:#fff; }
+  .nav-item.active{ background: rgba(201,168,92,0.16); color: var(--gold); font-weight:600; }
+  .nav-icon{ width:18px; height:18px; flex-shrink:0; }
+
+  .sidebar-footer{
+    margin-top:auto;
+    padding: 16px 24px 0;
+    border-top: 1px solid rgba(255,255,255,0.1);
+  }
+  .sidebar-footer .period-label{
+    font-size:0.72rem;
+    color:#9FB0AA;
+    margin-bottom:2px;
+  }
+  .sidebar-footer .period-value{
+    font-size:0.86rem;
+    font-weight:600;
+    color:#fff;
+  }
+
+  /* Mobile top bar (shown only on small screens) */
+  .mobile-topbar{
+    display:none;
+    align-items:center;
+    justify-content:space-between;
+    background: var(--navy);
+    color:#fff;
+    padding: 14px 18px;
+    position:sticky;
+    top:0;
+    z-index:50;
+  }
+  .mobile-topbar .biz-name{ font-family:'Source Serif 4',serif; font-weight:600; font-size:1.05rem; }
+  .mobile-menu-btn{
+    background:transparent; border:1px solid rgba(255,255,255,0.25); color:#fff;
+    border-radius:8px; padding:7px 10px; font-size:0.85rem;
+  }
+
+  /* ===== Main content ===== */
+  .main-content{
+    flex:1;
+    min-width:0;
+    padding: 32px 40px 60px;
+  }
+  .page{ display:none; }
+  .page.active{ display:block; }
+
+  .page-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    flex-wrap:wrap;
+    gap:16px;
+    margin-bottom:28px;
+  }
+  .page-title{
+    font-family:'Source Serif 4', serif;
+    font-size:1.7rem;
+    color: var(--navy);
+  }
+  .page-sub{
+    font-size:0.92rem;
+    color: var(--ink-soft);
+    margin-top:5px;
+  }
+
+  .btn{
+    display:inline-flex;
+    align-items:center;
+    gap:7px;
+    border:none;
+    border-radius:8px;
+    padding: 10px 18px;
+    font-size:0.88rem;
+    font-weight:600;
+    cursor:pointer;
+    transition: background 0.14s ease, transform 0.1s ease;
+  }
+  .btn:active{ transform: scale(0.98); }
+  .btn-primary{ background: var(--navy); color:#fff; }
+  .btn-primary:hover{ background: var(--navy-deep); }
+  .btn-outline{ background:#fff; border:1.5px solid var(--line); color: var(--navy); }
+  .btn-outline:hover{ background: var(--paper); }
+  .btn-danger{ background: var(--rust); color:#fff; }
+  .btn-danger:hover{ background:#943A26; }
+  .btn-sm{ padding:7px 13px; font-size:0.82rem; }
+
+  /* ===== KPI cards ===== */
+  .kpi-row{
+    display:grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap:16px;
+    margin-bottom:28px;
+  }
+  .kpi-card{
+    background: var(--card);
+    border:1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 20px 22px;
+    box-shadow: var(--shadow);
+  }
+  .kpi-label{
+    font-size:0.76rem;
+    font-weight:600;
+    color: var(--ink-soft);
+    margin-bottom:10px;
+  }
+  .kpi-value{
+    font-family:'Source Serif 4', serif;
+    font-size:1.7rem;
+    font-weight:600;
+    color: var(--navy);
+    line-height:1;
+  }
+  .kpi-value.positive{ color: var(--green); }
+  .kpi-value.negative{ color: var(--rust); }
+  .kpi-delta{
+    font-size:0.78rem;
+    font-weight:600;
+    margin-top:8px;
+    display:flex;
+    align-items:center;
+    gap:4px;
+  }
+  .kpi-delta.up{ color: var(--green); }
+  .kpi-delta.down{ color: var(--rust); }
+
+  /* ===== Statement-style panel (not a generic card) ===== */
+  .statement{
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    box-shadow: var(--shadow);
+    margin-bottom: 24px;
+  }
+  .statement-header{
+    padding: 20px 26px;
+    border-bottom: 2px solid var(--navy);
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    flex-wrap:wrap;
+    gap:8px;
+  }
+  .statement-title{
+    font-family:'Source Serif 4', serif;
+    font-size:1.15rem;
+    color: var(--navy);
+  }
+  .statement-period{
+    font-size:0.8rem;
+    color: var(--ink-soft);
+  }
+  .statement-body{ padding: 8px 26px 22px; }
+
+  .stmt-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--line-soft);
+    font-size:0.94rem;
+  }
+  .stmt-row:last-child{ border-bottom:none; }
+  .stmt-row.section-label{
+    font-weight:700;
+    color: var(--navy);
+    padding-top:16px;
+    font-size:0.82rem;
+    text-transform: uppercase;
+    letter-spacing:0.03em;
+    border-bottom:none;
+  }
+  .stmt-row.total{
+    font-weight:700;
+    border-top: 1.5px solid var(--navy);
+    border-bottom:none;
+    padding-top:14px;
+    margin-top:4px;
+    font-size:1rem;
+  }
+  .stmt-row .r-name{ color: var(--ink); }
+  .stmt-row .r-value{ font-variant-numeric: tabular-nums; color: var(--ink); }
+  .stmt-row .r-value.income{ color: var(--green); }
+  .stmt-row .r-value.expense{ color: var(--rust); }
+  .stmt-row .r-value.profit-pos{ color: var(--green); }
+  .stmt-row .r-value.profit-neg{ color: var(--rust); }
+
+  /* ===== Chart panels ===== */
+  .chart-grid{
+    display:grid;
+    grid-template-columns: 1.3fr 1fr;
+    gap:20px;
+    margin-bottom:24px;
+  }
+  .chart-panel{
+    background: var(--card);
+    border:1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 22px 24px;
+  }
+  .chart-panel h3{
+    font-size:0.98rem;
+    color: var(--navy);
+    margin-bottom:4px;
+  }
+  .chart-panel .chart-sub{
+    font-size:0.78rem;
+    color: var(--ink-faint);
+    margin-bottom:18px;
+  }
+
+  /* ===== Transactions table ===== */
+  .table-toolbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:12px;
+    margin-bottom:16px;
+  }
+  .filter-group{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+  }
+  select, input[type=text], input[type=number], input[type=date]{
+    font-family:inherit;
+    font-size:0.85rem;
+    padding: 8px 12px;
+    border-radius:7px;
+    border:1.5px solid var(--line);
+    background:#fff;
+    color: var(--ink);
+  }
+  select:focus, input:focus{ outline:none; border-color: var(--navy); }
+
+  .tx-table-wrap{
+    background: var(--card);
+    border:1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow:hidden;
+  }
+  table.tx-table{
+    width:100%;
+    border-collapse: collapse;
+    font-size:0.87rem;
+  }
+  .tx-table thead th{
+    background: var(--navy);
+    color:#fff;
+    text-align:left;
+    padding: 12px 16px;
+    font-weight:600;
+    font-size:0.78rem;
+  }
+  .tx-table thead th.num-col{ text-align:right; }
+  .tx-table tbody td{
+    padding: 11px 16px;
+    border-bottom: 1px solid var(--line-soft);
+    color: var(--ink);
+  }
+  .tx-table tbody tr:last-child td{ border-bottom:none; }
+  .tx-table tbody tr:hover{ background: var(--paper); }
+  .tx-table td.num-col{ text-align:right; font-variant-numeric:tabular-nums; font-weight:600; }
+  .tx-table td.num-col.income{ color: var(--green); }
+  .tx-table td.num-col.expense{ color: var(--rust); }
+  .type-badge{
+    font-size:0.7rem;
+    font-weight:700;
+    padding:3px 9px;
+    border-radius:20px;
+    text-transform: capitalize;
+  }
+  .type-badge.income{ background: var(--green-bg); color: var(--green); }
+  .type-badge.expense{ background: var(--rust-bg); color: var(--rust); }
+  .row-delete-btn{
+    background:transparent; border:none; color: var(--ink-faint); font-size:0.85rem; padding:4px 8px; border-radius:5px;
+  }
+  .row-delete-btn:hover{ color: var(--rust); background: var(--rust-bg); }
+
+  .empty-state{
+    text-align:center;
+    padding: 50px 20px;
+    color: var(--ink-faint);
+    font-size:0.9rem;
+  }
+
+  /* ===== Add transaction form ===== */
+  .modal-overlay{
+    position:fixed; inset:0;
+    background: rgba(19,30,40,0.55);
+    display:flex; align-items:center; justify-content:center;
+    z-index:100;
+    padding:20px;
+  }
+  .modal-box{
+    background:#fff;
+    border-radius: 12px;
+    box-shadow: 0 12px 40px rgba(19,30,40,0.25);
+    padding: 30px 32px;
+    width:100%;
+    max-width: 460px;
+  }
+  .modal-box h3{
+    font-family:'Source Serif 4', serif;
+    font-size:1.25rem;
+    color: var(--navy);
+    margin-bottom:20px;
+  }
+  .field{ margin-bottom:16px; }
+  .field label{
+    display:block;
+    font-size:0.82rem;
+    font-weight:600;
+    color: var(--ink);
+    margin-bottom:6px;
+  }
+  .field select, .field input{ width:100%; }
+  .field-row{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .toggle-group{ display:flex; gap:8px; margin-bottom:16px; }
+  .toggle-btn{
+    flex:1;
+    padding: 10px;
+    border-radius:8px;
+    border:1.5px solid var(--line);
+    background:#fff;
+    font-size:0.85rem;
+    font-weight:600;
+    color: var(--ink-soft);
+  }
+  .toggle-btn.active.income{ background: var(--green-bg); border-color: var(--green); color: var(--green); }
+  .toggle-btn.active.expense{ background: var(--rust-bg); border-color: var(--rust); color: var(--rust); }
+  .modal-actions{ display:flex; gap:10px; margin-top:22px; }
+  .modal-actions .btn{ flex:1; justify-content:center; }
+  .field-error{ color: var(--rust); font-size:0.78rem; margin-top:5px; display:none; }
+
+  /* ===== Insights / recommendations ===== */
+  .insight-card{
+    display:flex;
+    gap:14px;
+    padding: 16px 18px;
+    border-radius:10px;
+    margin-bottom:12px;
+    align-items:flex-start;
+  }
+  .insight-card.positive{ background: var(--green-bg); }
+  .insight-card.warning{ background: var(--rust-bg); }
+  .insight-card.neutral{ background: var(--gold-bg); }
+  .insight-icon{
+    width:34px; height:34px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-size:1rem; flex-shrink:0; font-weight:700;
+    background: rgba(255,255,255,0.6);
+  }
+  .insight-text{ font-size:0.88rem; line-height:1.55; color: var(--ink); }
+  .insight-text b{ display:block; margin-bottom:2px; }
+
+  /* ===== Responsive ===== */
+  @media (max-width: 980px){
+    .kpi-row{ grid-template-columns: repeat(2,1fr); }
+    .chart-grid{ grid-template-columns: 1fr; }
+  }
+  @media (max-width: 800px){
+    .sidebar{ display:none; }
+    .mobile-topbar{ display:flex; }
+    .main-content{ padding: 20px 16px 50px; }
+    .app-shell{ flex-direction:column; }
+    .sidebar.mobile-open{
+      display:flex;
+      position:fixed;
+      inset:0 20% 0 0;
+      z-index:60;
+      height:100vh;
+    }
+    .field-row{ grid-template-columns:1fr; }
+  }
+  @media (max-width: 480px){
+    .kpi-row{ grid-template-columns: 1fr; }
+    .page-title{ font-size:1.4rem; }
+    .statement-header, .statement-body{ padding-left:16px; padding-right:16px; }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration:0.001ms !important; transition-duration:0.001ms !important; }
+  }
+  a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible{
+    outline: 2.5px solid var(--navy);
+    outline-offset:2px;
+  }
+</style>
+</head>
+<body>
+
+<div class="mobile-topbar">
+  <span class="biz-name">Baskar Traders</span>
+  <button class="mobile-menu-btn" id="mobileMenuBtn">Menu</button>
+</div>
+
+<div class="app-shell">
+  <nav class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="biz-name">Baskar Traders</div>
+      <div class="biz-type">Retail &amp; Wholesale Trading</div>
+    </div>
+    <div class="nav-list">
+      <button class="nav-item active" data-page="dashboard">Dashboard</button>
+      <button class="nav-item" data-page="pnl">Profit &amp; Loss</button>
+      <button class="nav-item" data-page="transactions">Transactions</button>
+      <button class="nav-item" data-page="insights">Insights</button>
+    </div>
+    <div class="sidebar-footer">
+      <div class="period-label">Financial Year</div>
+      <div class="period-value">Jan – Dec 2025</div>
+    </div>
+  </nav>
+
+  <main class="main-content">
+
+    <!-- ============ DASHBOARD PAGE ============ -->
+    <section class="page active" id="page-dashboard">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Financial Dashboard</h1>
+          <p class="page-sub">Overview of income, expenses and profit for the current financial year.</p>
+        </div>
+        <button class="btn btn-primary" id="addTxBtnDash">+ Add Transaction</button>
+      </div>
+
+      <div class="kpi-row" id="kpiRow"></div>
+
+      <div class="chart-grid">
+        <div class="chart-panel">
+          <h3>Revenue vs Expenses</h3>
+          <p class="chart-sub">Monthly trend for the financial year</p>
+          <div id="trendChart"></div>
+        </div>
+        <div class="chart-panel">
+          <h3>Expense Breakdown</h3>
+          <p class="chart-sub">Share of total expenses by category</p>
+          <div id="expensePieChart"></div>
+        </div>
+      </div>
+
+      <div class="chart-panel" style="margin-bottom:24px;">
+        <h3>Monthly Net Profit</h3>
+        <p class="chart-sub">Profit or loss recorded each month</p>
+        <div id="profitBarChart"></div>
+      </div>
+    </section>
+
+    <!-- ============ P&L PAGE ============ -->
+    <section class="page" id="page-pnl">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Profit &amp; Loss Statement</h1>
+          <p class="page-sub">Income and expenses for the selected period.</p>
+        </div>
+        <select id="pnlPeriodSelect">
+          <option value="all">Full Year (Jan – Dec 2025)</option>
+        </select>
+      </div>
+
+      <div class="statement" id="pnlStatement"></div>
+
+      <div class="chart-panel">
+        <h3>Profit Margin Trend</h3>
+        <p class="chart-sub">Net profit margin (%) by month</p>
+        <div id="marginChart"></div>
+      </div>
+    </section>
+
+    <!-- ============ TRANSACTIONS PAGE ============ -->
+    <section class="page" id="page-transactions">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Transactions</h1>
+          <p class="page-sub">All recorded income and expense entries.</p>
+        </div>
+        <button class="btn btn-primary" id="addTxBtnTx">+ Add Transaction</button>
+      </div>
+
+      <div class="table-toolbar">
+        <div class="filter-group">
+          <select id="filterType">
+            <option value="all">All Types</option>
+            <option value="income">Income</option>
+            <option value="expense">Expense</option>
+          </select>
+          <select id="filterMonth">
+            <option value="all">All Months</option>
+          </select>
+          <select id="filterCategory">
+            <option value="all">All Categories</option>
+          </select>
+        </div>
+        <input type="text" id="searchTx" placeholder="Search description...">
+      </div>
+
+      <div class="tx-table-wrap">
+        <table class="tx-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Description</th>
+              <th>Category</th>
+              <th>Type</th>
+              <th class="num-col">Amount (₹)</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="txTableBody"></tbody>
+        </table>
+        <div class="empty-state hidden" id="txEmptyState">No transactions match your filters.</div>
+      </div>
+    </section>
+
+    <!-- ============ INSIGHTS PAGE ============ -->
+    <section class="page" id="page-insights">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Insights &amp; Recommendations</h1>
+          <p class="page-sub">Automatically generated observations based on your financial data.</p>
+        </div>
+      </div>
+      <div id="insightsList"></div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ============ ADD TRANSACTION MODAL ============ -->
+<div class="modal-overlay hidden" id="txModal">
+  <div class="modal-box">
+    <h3>Add Transaction</h3>
+    <div class="toggle-group">
+      <button type="button" class="toggle-btn income active" id="typeIncomeBtn">Income</button>
+      <button type="button" class="toggle-btn expense" id="typeExpenseBtn">Expense</button>
+    </div>
+    <div class="field">
+      <label for="txDate">Date</label>
+      <input type="date" id="txDate">
+    </div>
+    <div class="field">
+      <label for="txCategory">Category</label>
+      <select id="txCategory"></select>
+    </div>
+    <div class="field">
+      <label for="txDescription">Description</label>
+      <input type="text" id="txDescription" placeholder="e.g. Cash sale to walk-in customer">
+    </div>
+    <div class="field">
+      <label for="txAmount">Amount (₹)</label>
+      <input type="number" id="txAmount" placeholder="0" min="0" step="1">
+      <div class="field-error" id="txAmountError">Please enter a valid amount greater than 0.</div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" id="cancelTxBtn">Cancel</button>
+      <button class="btn btn-primary" id="saveTxBtn">Save Transaction</button>
+    </div>
+  </div>
+</div>
+
+<script src="data.js"></script>
+<script src="charts.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
