@@ -1,39 +1,73 @@
 // Small Business Financial Management & Profit Analysis System
-// Application logic
+// Application logic — data layer backed by Supabase (per-user)
 
 (function(){
   "use strict";
 
-  const STORAGE_KEY = "fmsAppState_v1";
   const $ = (id) => document.getElementById(id);
 
   let transactions = [];
   let currentTxType = "income";
 
   // ================= INIT =================
-  function init(){
-    loadTransactions();
+  // App init now happens after a successful login — see auth-ui.js,
+  // which calls window.FMS_APP.start() once a session is confirmed.
+  async function start(){
+    await loadTransactions();
     setupNav();
     setupModal();
     setupFilters();
     renderAll();
   }
 
-  function loadTransactions(){
-    try{
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved){
-        transactions = JSON.parse(saved);
-        return;
-      }
-    }catch(e){ /* fall through to sample data */ }
-    // seed with sample data on first run
-    transactions = JSON.parse(JSON.stringify(SAMPLE_TRANSACTIONS));
-    persist();
+  async function loadTransactions(){
+    const { data, error } = await supabaseClient
+      .from('transactions')
+      .select('*')
+      .order('date', { ascending: false });
+
+    if (error){
+      console.error("Failed to load transactions:", error);
+      transactions = [];
+      return;
+    }
+
+    if (data.length === 0){
+      // First login for this user — seed their account with sample data
+      // so the dashboard isn't empty. This is a one-time convenience seed.
+      await seedSampleDataForUser();
+      return loadTransactions();
+    }
+
+    transactions = data.map(rowToTx);
   }
 
-  function persist(){
-    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(transactions)); }catch(e){ /* storage unavailable */ }
+  function rowToTx(row){
+    return {
+      id: row.id,
+      date: row.date,
+      month: row.month,
+      monthIndex: row.month_index,
+      type: row.type,
+      category: row.category,
+      description: row.description,
+      amount: Number(row.amount)
+    };
+  }
+
+  async function seedSampleDataForUser(){
+    const rows = SAMPLE_TRANSACTIONS.map(t => ({
+      user_id: currentUser.id,
+      date: t.date,
+      month: t.month,
+      month_index: t.monthIndex,
+      type: t.type,
+      category: t.category,
+      description: t.description,
+      amount: t.amount
+    }));
+    const { error } = await supabaseClient.from('transactions').insert(rows);
+    if (error) console.error("Failed to seed sample data:", error);
   }
 
   // ================= NAVIGATION =================
@@ -95,7 +129,7 @@
     });
   }
 
-  function saveNewTransaction(){
+  async function saveNewTransaction(){
     const dateVal = $("txDate").value;
     const category = $("txCategory").value;
     const description = $("txDescription").value.trim() || category;
@@ -111,18 +145,32 @@
     const monthIndex = dateObj.getMonth();
     const monthName = MONTHS[monthIndex];
 
-    const newTx = {
-      id: transactions.length ? Math.max(...transactions.map(t=>t.id))+1 : 1,
+    const saveBtn = $("saveTxBtn");
+    saveBtn.disabled = true;
+    saveBtn.textContent = "Saving...";
+
+    const { error } = await supabaseClient.from('transactions').insert({
+      user_id: currentUser.id,
       date: dateVal || new Date().toISOString().slice(0,10),
       month: monthName,
-      monthIndex: monthIndex,
+      month_index: monthIndex,
       type: currentTxType,
       category: category,
       description: description,
       amount: Math.round(amount)
-    };
-    transactions.push(newTx);
-    persist();
+    });
+
+    saveBtn.disabled = false;
+    saveBtn.textContent = "Save Transaction";
+
+    if (error){
+      $("txAmountError").textContent = "Failed to save. Please try again.";
+      $("txAmountError").style.display = "block";
+      console.error(error);
+      return;
+    }
+
+    await loadTransactions();
     closeTxModal();
     renderAll();
   }
@@ -315,13 +363,18 @@
     `).join("");
 
     tbody.querySelectorAll(".row-delete-btn").forEach(btn=>{
-      btn.addEventListener("click", () => deleteTransaction(Number(btn.dataset.id)));
+      btn.addEventListener("click", () => deleteTransaction(btn.dataset.id));
     });
   }
 
-  function deleteTransaction(id){
-    transactions = transactions.filter(t => t.id !== id);
-    persist();
+  async function deleteTransaction(id){
+    const { error } = await supabaseClient.from('transactions').delete().eq('id', id);
+    if (error){
+      console.error("Failed to delete transaction:", error);
+      alert("Failed to delete transaction. Please try again.");
+      return;
+    }
+    await loadTransactions();
     renderAll();
   }
 
@@ -416,5 +469,5 @@
     `).join("");
   }
 
-  init();
+  window.FMS_APP = { start: start };
 })();

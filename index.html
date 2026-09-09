@@ -461,6 +461,54 @@
   .insight-text{ font-size:0.88rem; line-height:1.55; color: var(--ink); }
   .insight-text b{ display:block; margin-bottom:2px; }
 
+  /* ===== Auth screen ===== */
+  .auth-screen{
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background: var(--navy);
+    padding:24px;
+  }
+  .auth-loading-text{ color:#C7D2CD; font-size:0.95rem; }
+  .auth-card{
+    background:#fff;
+    border-radius:14px;
+    box-shadow: 0 16px 48px rgba(0,0,0,0.28);
+    padding: 38px 36px;
+    width:100%;
+    max-width: 420px;
+  }
+  .auth-brand{ margin-bottom:22px; }
+  .auth-brand-name{
+    font-size:0.92rem;
+    color: var(--ink-soft);
+    font-weight:600;
+  }
+  .auth-card h2{ font-size:1.5rem; color: var(--navy); margin-bottom:6px; }
+  .auth-subtitle{ font-size:0.88rem; color: var(--ink-soft); margin-bottom:24px; }
+  .auth-config-text{ font-size:0.9rem; color: var(--ink-soft); line-height:1.7; margin-top:10px; }
+  .auth-config-text code{ background: var(--paper); padding:2px 6px; border-radius:4px; font-size:0.85em; }
+  #authForm .field{ margin-bottom:16px; }
+  .auth-error{
+    background: var(--rust-bg);
+    color: var(--rust);
+    font-size:0.84rem;
+    padding: 11px 14px;
+    border-radius:8px;
+    margin-bottom:16px;
+    line-height:1.5;
+  }
+  .auth-error.info{ background: var(--green-bg); color: var(--green); }
+  .forgot-password-row{ text-align:right; margin-bottom:18px; margin-top:-6px; }
+  .link-btn{
+    background:none; border:none; color: var(--navy); font-weight:600;
+    font-size:0.84rem; text-decoration:underline; padding:0; cursor:pointer;
+  }
+  .auth-submit-btn{ width:100%; justify-content:center; padding:12px; font-size:0.92rem; }
+  .switch-mode-text{ text-align:center; font-size:0.85rem; color: var(--ink-soft); margin-top:18px; }
+  .logout-btn{ width:100%; margin-top:10px; }
+
   /* ===== Responsive ===== */
   @media (max-width: 980px){
     .kpi-row{ grid-template-columns: repeat(2,1fr); }
@@ -497,6 +545,59 @@
 </head>
 <body>
 
+<!-- ============ AUTH LOADING (shown briefly on page load) ============ -->
+<div class="auth-screen" id="authLoading">
+  <div class="auth-loading-text">Loading…</div>
+</div>
+
+<!-- ============ CONFIG NEEDED (shown if Supabase isn't set up yet) ============ -->
+<div class="auth-screen hidden" id="configNeededScreen">
+  <div class="auth-card">
+    <h2 class="serif">Setup required</h2>
+    <p class="auth-config-text">
+      This app needs to be connected to a Supabase project before login will work.
+      Open <code>auth.js</code> and fill in your <strong>Project URL</strong> and
+      <strong>anon public key</strong> from your Supabase dashboard
+      (Project Settings → API), then reload this page.
+    </p>
+  </div>
+</div>
+
+<!-- ============ LOGIN / SIGNUP SCREEN ============ -->
+<div class="auth-screen hidden" id="authScreen">
+  <div class="auth-card">
+    <div class="auth-brand">
+      <div class="auth-brand-name serif">Financial Management &amp; Profit Analysis</div>
+    </div>
+    <h2 class="serif" id="authTitle">Log In</h2>
+    <p class="auth-subtitle" id="authSubtitle">Log in to access your financial dashboard.</p>
+
+    <form id="authForm" class="hidden">
+      <div class="field hidden" id="businessNameField">
+        <label for="authBusinessName">Business Name</label>
+        <input type="text" id="authBusinessName" placeholder="e.g. Baskar Traders" autocomplete="organization">
+      </div>
+      <div class="field">
+        <label for="authEmail">Email</label>
+        <input type="email" id="authEmail" placeholder="you@example.com" autocomplete="email" required>
+      </div>
+      <div class="field" id="passwordField">
+        <label for="authPassword">Password</label>
+        <input type="password" id="authPassword" placeholder="••••••••" autocomplete="current-password">
+      </div>
+      <div class="auth-error hidden" id="authError"></div>
+      <div class="forgot-password-row" id="forgotPasswordRow">
+        <button type="button" class="link-btn" id="forgotPasswordBtn">Forgot password?</button>
+      </div>
+      <button type="submit" class="btn btn-primary auth-submit-btn" id="authSubmitBtn">Log In</button>
+      <p class="switch-mode-text" id="switchModeText"></p>
+    </form>
+  </div>
+</div>
+
+<!-- ============ MAIN APP (shown only after login) ============ -->
+<div id="appShellWrap" class="hidden">
+
 <div class="mobile-topbar">
   <span class="biz-name">Baskar Traders</span>
   <button class="mobile-menu-btn" id="mobileMenuBtn">Menu</button>
@@ -515,8 +616,9 @@
       <button class="nav-item" data-page="insights">Insights</button>
     </div>
     <div class="sidebar-footer">
-      <div class="period-label">Financial Year</div>
-      <div class="period-value">Jan – Dec 2025</div>
+      <div class="period-label">Logged in as</div>
+      <div class="period-value user-email-display" style="word-break:break-all;"></div>
+      <button class="btn btn-outline btn-sm logout-btn" id="logoutBtn">Log Out</button>
     </div>
   </nav>
 
@@ -634,6 +736,8 @@
   </main>
 </div>
 
+</div> <!-- /#appShellWrap -->
+
 <!-- ============ ADD TRANSACTION MODAL ============ -->
 <div class="modal-overlay hidden" id="txModal">
   <div class="modal-box">
@@ -666,8 +770,11 @@
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="auth.js"></script>
 <script src="data.js"></script>
 <script src="charts.js"></script>
 <script src="app.js"></script>
+<script src="auth-ui.js"></script>
 </body>
 </html>
