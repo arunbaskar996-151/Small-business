@@ -6,8 +6,8 @@
 // Find them at: Supabase Dashboard → Project Settings → API
 // ============================================================
 const SUPABASE_CONFIG = {
-  url: "YOUR_SUPABASE_PROJECT_URL",       // e.g. "https://xxxxx.supabase.co"
-  anonKey: "YOUR_SUPABASE_ANON_KEY"        // e.g. "eyJhbGciOi..."
+  url: "https://pfkkfpfivpompxmwocyq.supabase.co",
+  anonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBma2tmcGZpdnBvbXB4bXdvY3lxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg5MjA1NDMsImV4cCI6MjEwNDQ5NjU0M30.hEFB26WP0Dme17udSZbAUmNbw2_nYMKEpDzXTrlSjAo"
 };
 // ============================================================
 
